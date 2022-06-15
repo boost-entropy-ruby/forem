@@ -48,7 +48,7 @@ gem "html_truncator", "~> 0.4" # Truncate an HTML string properly
 gem "httparty", "~> 0.20" # Makes http fun! Also, makes consuming restful web services dead easy
 gem "httpclient", "~> 2.8.3" # Gives something like the functionality of libwww-perl (LWP) in Ruby
 gem "i18n-js", "~> 3.9.2" # Helps with internationalization in Rails.
-gem "imgproxy", "~> 2.0" # A gem that easily generates imgproxy URLs for your images
+gem "imgproxy", "~> 2.1" # A gem that easily generates imgproxy URLs for your images
 gem "inline_svg", "~> 1.8" # Embed SVG documents in your Rails views and style them with CSS
 gem "jbuilder", "~> 2.11" # Create JSON structures via a Builder-style DSL
 gem "js-routes", "~> 2.2" # Brings Rails named routes to javascript
@@ -97,7 +97,7 @@ gem "rubyzip", "~> 2.3" # Rubyzip is a ruby library for reading and writing zip 
 gem "s3_direct_upload", "~> 0.1" # Direct Upload to Amazon S3
 gem "sidekiq", "~> 6.5.0" # Sidekiq is used to process background jobs with the help of Redis
 gem "sidekiq-cron", "~> 1.5" # Allows execution of scheduled cron jobs as specific times
-gem "sidekiq-unique-jobs", "~> 7.1.24" # Ensures that Sidekiq jobs are unique when enqueued
+gem "sidekiq-unique-jobs", "~> 7.1.25" # Ensures that Sidekiq jobs are unique when enqueued
 gem "slack-notifier", "~> 2.4" # A slim ruby wrapper for posting to slack webhooks
 gem "sprockets-rails", "~> 3.4" # Sprockets Rails integration
 gem "staccato", "~> 0.5" # Ruby Google Analytics Measurement
@@ -146,7 +146,7 @@ group :development, :test do
   gem "rspec-rails", "~> 5.1" # rspec-rails is a testing framework for Rails 3+
   gem "rubocop", "~> 1.30", require: false # Automatic Ruby code style checking tool
   gem "rubocop-performance", "~> 1.14", require: false # A collection of RuboCop cops to check for performance optimizations in Ruby code
-  gem "rubocop-rails", "~> 2.14", require: false # Automatic Rails code style checking tool
+  gem "rubocop-rails", "~> 2.15", require: false # Automatic Rails code style checking tool
   gem "rubocop-rspec", "~> 2.11", require: false # Code style checking for RSpec files
   gem "sassc-rails", "~> 2.1.2" # Integrate SassC-Ruby into Rails
 end
