@@ -137,6 +137,7 @@ class User < ApplicationRecord
   validates :spent_credits_count, presence: true
   validates :subscribed_to_user_subscriptions_count, presence: true
   validates :unspent_credits_count, presence: true
+  validates :max_score, numericality: { greater_than_or_equal_to: 0 }
   validates :reputation_modifier, numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 5 },
                                   presence: true
 
@@ -376,6 +377,10 @@ class User < ApplicationRecord
     Rails.cache.fetch(cache_key, expires_in: 200.hours) do
       roles.pluck(:name)
     end
+  end
+
+  def cached_base_subscriber?
+    cached_role_names.include?("base_subscriber")
   end
 
   def processed_website_url
