@@ -84,6 +84,7 @@ class Billboard < ApplicationRecord
   before_save :process_markdown
   after_save :generate_billboard_name
   after_save :refresh_audience_segment, if: :should_refresh_audience_segment?
+  after_save :update_links_with_bb_param
 
   scope :approved_and_published, -> { where(approved: true, published: true) }
 
@@ -98,7 +99,8 @@ class Billboard < ApplicationRecord
   self.table_name = "display_ads"
 
   def self.for_display(area:, user_signed_in:, user_id: nil, article: nil, user_tags: nil,
-                       location: nil, cookies_allowed: false, page_id: nil, user_agent: nil)
+                       location: nil, cookies_allowed: false, page_id: nil, user_agent: nil,
+                       role_names: nil)
     permit_adjacent = article ? article.permit_adjacent_sponsors? : true
 
     billboards_for_display = Billboards::FilteredAdsQuery.call(
@@ -115,6 +117,7 @@ class Billboard < ApplicationRecord
       location: location,
       cookies_allowed: cookies_allowed,
       user_agent: user_agent,
+      role_names: role_names,
     )
 
     case rand(99) # output integer from 0-99
@@ -281,6 +284,16 @@ class Billboard < ApplicationRecord
     write_attribute :preferred_article_ids, (adjusted_input || [])
   end
 
+  def exclude_role_names=(input)
+    adjusted_input = input.is_a?(String) ? input.split(",") : input
+    write_attribute :exclude_role_names, (adjusted_input || [])
+  end
+
+  def target_role_names=(input)
+    adjusted_input = input.is_a?(String) ? input.split(",") : input
+    write_attribute :target_role_names, (adjusted_input || [])
+  end
+
   def style_string
     return "" if color.blank?
 
@@ -289,6 +302,40 @@ class Billboard < ApplicationRecord
     else
       "border: 5px solid #{color}"
     end
+  end
+
+  def update_links_with_bb_param
+    # Parse the processed_html with Nokogiri
+    full_html = "<html><head></head><body>#{processed_html}</body></html>"
+    doc = Nokogiri::HTML(full_html)
+    # Iterate over all the <a> tags
+    doc.css("a").each do |link|
+      href = link["href"]
+      next unless href.present? && href.start_with?("http", "/")
+
+      uri = URI.parse(href)
+      existing_params = URI.decode_www_form(uri.query || "")
+      # Check if 'bb' parameter exists and update it or append if not exists
+      bb_param_index = existing_params.find_index { |param| param[0] == "bb" }
+      if bb_param_index
+        existing_params[bb_param_index][1] = id.to_s # Update existing 'bb' parameter
+      else
+        existing_params << ["bb", id.to_s] # Append new 'bb' parameter
+      end
+      uri.query = URI.encode_www_form(existing_params)
+      link["href"] = uri.to_s
+    end
+
+    # Extract and save only the inner HTML of the body
+    modified_html = doc.at("body").inner_html
+
+    modified_html.gsub!(/href="([^"]*)&amp;([^"]*)"/, 'href="\1&\2"')
+
+    # Early return if the new HTML is the same as the old one
+    return if modified_html == processed_html
+
+    # Update the processed_html column with the new HTML
+    update_column(:processed_html, modified_html)
   end
 
   private
