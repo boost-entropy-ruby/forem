@@ -83,7 +83,7 @@ export const Article = ({
         {article.cloudinary_video_url && <Video article={article} />}
 
         {showCover && <ArticleCoverImage article={article} />}
-        <div className="crayons-story__body">
+        <div className={`crayons-story__body crayons-story__body-${article.type_of}`}>
           <div className="crayons-story__top">
             <Meta article={article} organization={article.organization} />
             {pinned && (
@@ -110,7 +110,7 @@ export const Article = ({
 
           <div className="crayons-story__indention">
             <ContentTitle article={article} />
-            <TagList tags={article.tag_list} flare_tag={article.flare_tag} />
+            {article.type_of !== 'status' && (<TagList tags={article.tag_list} flare_tag={article.flare_tag} />)}
 
             {isArticle && (
               // eslint-disable-next-line no-underscore-dangle
@@ -130,7 +130,7 @@ export const Article = ({
               )}
 
               <div className="crayons-story__save">
-                <ReadingTime readingTime={article.reading_time} />
+                <ReadingTime readingTime={article.reading_time} typeOf={article.type_of} />
 
                 <SaveButton
                   article={article}

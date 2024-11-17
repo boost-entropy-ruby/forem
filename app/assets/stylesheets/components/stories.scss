@@ -9,6 +9,18 @@
   min-width: 0;
 }
 
+#main-status-form {
+  line-height: 0;
+  margin-bottom: var(--su-1);
+  #main-status-form-controls {
+    line-height: 24px;
+  }
+}
+#article_title {
+  height: auto;
+  resize: none;
+}
+
 .crayons-story {
   background: var(--card-bg);
   box-shadow: 0 0 0 1px var(--card-secondary-border);
@@ -91,6 +103,11 @@
 
   &__body {
     padding: var(--story-padding);
+  }
+
+  &__body-status {
+    padding-top: var(--su-3);
+    padding-bottom: var(--su-3);
   }
 
   &__indention {
@@ -187,6 +204,16 @@
     }
   }
 
+  &__title-status {
+    font-weight: var(--fw-normal);
+    font-size: var(--fs-l);
+    a {
+      &:hover {
+        color: var(--card-color);
+      }
+    }
+  }
+
   &__flare-tag {
     font-weight: normal;
     // font-size: 0.6em;
@@ -208,6 +235,7 @@
     align-items: center;
     font-size: var(--fs-s);
     line-height: var(--lh-tight);
+    margin-left: -2px;
   }
 
   &__details {

@@ -1,11 +1,14 @@
 class ApplicationController < ActionController::Base
   before_action :configure_permitted_parameters, if: :devise_controller?
   skip_before_action :track_ahoy_visit
+  before_action :set_session_domain
   before_action :verify_private_forem
   protect_from_forgery with: :exception, prepend: true
+  before_action :set_devise_rememberable_options # Add this line
   before_action :remember_cookie_sync
   before_action :forward_to_app_config_domain
   before_action :determine_locale
+  after_action  :clear_request_store
 
   include SessionCurrentUser
   include ValidRequest
@@ -259,6 +262,30 @@ class ApplicationController < ActionController::Base
                   end
   end
 
+  def set_devise_rememberable_options
+    # Determine the domain based on the request
+    domain = if Rails.env.production?
+               # List of your secondary domains
+               secondary_domains = ApplicationConfig["SECONDARY_APP_DOMAINS"].to_s.split(",").map(&:strip)
+               if secondary_domains.include?(request.host)
+                request.session_options[:domain] = request.host
+              else
+                 # For main domain, set to ApplicationConfig["APP_DOMAIN"]
+                 ApplicationConfig["APP_DOMAIN"]
+               end
+             else
+               # In non-production environments, don't set the domain
+               nil
+             end
+
+    # Set the rememberable options for Devise
+    request.env['devise.rememberable_options'] = {
+      domain: domain,
+      secure: ApplicationConfig["FORCE_SSL_IN_RAILS"] == "true",
+      httponly: true
+    }
+  end
+
   def remember_cookie_sync
     # Set remember cookie token in case not properly set.
     if user_signed_in? &&
@@ -295,7 +322,7 @@ class ApplicationController < ActionController::Base
       # If the app domain config has now been set, let's go there instead.
       ENV["APP_DOMAIN"] != Settings::General.app_domain
 
-    redirect_to URL.url(request.fullpath)
+    redirect_to URL.url(request.fullpath), allow_other_host: true
   end
 
   def bust_content_change_caches
@@ -316,9 +343,30 @@ class ApplicationController < ActionController::Base
     devise_parameter_sanitizer.permit(:accept_invitation, keys: %i[name])
   end
 
+  def set_session_domain
+    if Rails.env.production?
+      # List of your secondary domains
+      secondary_domains = ApplicationConfig["SECONDARY_APP_DOMAINS"].to_s.split(",").map(&:strip)
+      if secondary_domains.include?(request.host)
+        request.session_options[:domain] = request.host
+      else
+        # For main domain, set to ApplicationConfig["APP_DOMAIN"]
+        request.session_options[:domain] = ApplicationConfig["APP_DOMAIN"]
+      end
+    else
+      # In non-production environments, don't set the domain
+      request.session_options[:domain] = nil
+    end
+  end
+
   def internal_nav_param
     return "" unless params[:i] == "i"
 
     "?i=i"
+  end
+
+  def clear_request_store
+    # Clear RequestStore in development/test to avoid lingering. Not important in prod. 
+    RequestStore.clear! unless Rails.env.production?
   end
 end
