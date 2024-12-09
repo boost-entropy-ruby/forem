@@ -59,7 +59,7 @@ class AuthPassController < ApplicationController
         # Get Devise’s default cookie values
         base_values = Devise::Controllers::Rememberable.cookie_values
         # Dynamically adjust the domain to match the request domain
-        custom_domain = request.domain
+        custom_domain = request.host
         adjusted_values = base_values.merge!(domain: custom_domain)
         # Set the actual remember cookie values as Devise does
         cookie_values = adjusted_values.merge!(
@@ -68,7 +68,15 @@ class AuthPassController < ApplicationController
         )
         # Set the cookie with the dynamically adjusted domain
         cookies.signed["remember_user_token"] = cookie_values
-  
+
+        cookies[:forem_user_signed_in] = {
+          value: "true",
+          domain: ".#{custom_domain}",
+          httponly: true,
+          secure: ApplicationConfig["FORCE_SSL_IN_RAILS"] == "true",
+          expires: 2.year.from_now
+        }
+
         render json: { success: true, user: { id: user.id, email: user.email } }
       else
         render json: { success: false, error: "User not found" }, status: :unauthorized
