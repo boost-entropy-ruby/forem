@@ -8,6 +8,7 @@ Rails.application.routes.draw do
     registrations: "registrations",
     invitations: "invitations",
     passwords: "passwords",
+    sessions: "sessions",
     confirmations: "confirmations"
   }
 
@@ -79,6 +80,8 @@ Rails.application.routes.draw do
         end
 
         resources :pages, only: %i[index show create update destroy]
+
+        resources :feedback_messages, only: :update
 
         resources :organizations, only: %i[index create update destroy]
 
